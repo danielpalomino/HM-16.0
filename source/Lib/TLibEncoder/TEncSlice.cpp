@@ -962,8 +962,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
         else
             m_pcCfg->setShiftLevel(0);
     }else
-        m_pcCfg->setShiftLevel(0);
-//    printf("CU %d\n",uiEncCUOrder);
+        m_pcCfg->setShiftLevel(1);
     //Setting quadtree level depending on CU variance
     //  QuadTreeDepth  |    MPD
     //          1      |     1
@@ -987,7 +986,10 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
                 else
                     pcCU->setQuadtreeDepth(4);
     } else
-        pcCU->setQuadtreeDepth(4);
+        if(uiEncCUOrder < rpcPic->getFrameHeightInCU()*rpcPic->getFrameWidthInCU()-rpcPic->getFrameWidthInCU()-1)
+            pcCU->setQuadtreeDepth(1);
+        else
+            pcCU->setQuadtreeDepth(2);
     //DANIEL END
     
     // inherit from TR if necessary, select substream to use.
