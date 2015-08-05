@@ -989,7 +989,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
         if(uiEncCUOrder < rpcPic->getFrameHeightInCU()*rpcPic->getFrameWidthInCU()-rpcPic->getFrameWidthInCU()-1)
             pcCU->setQuadtreeDepth(1);
         else
-            pcCU->setQuadtreeDepth(2);
+            pcCU->setQuadtreeDepth(4);
     //DANIEL END
     
     // inherit from TR if necessary, select substream to use.
