@@ -55,6 +55,10 @@ using namespace std;
 Bool g_bFinalEncode = false;
 #endif
 
+//DANIEL BEGIN
+extern Int timePerFrame;
+//DANIEL END
+
 //! \ingroup TLibEncoder
 //! \{
 
@@ -2548,6 +2552,18 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   {
     printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", MSEyuvframe[COMPONENT_Y], MSEyuvframe[COMPONENT_Cb], MSEyuvframe[COMPONENT_Cr] );
   }
+  
+  if((Double) timePerFrame > dEncTime && timePerFrame > 0){
+    timespec sleep_time;
+    //calculate time system will sleep timePerFrame - dEncTime
+    sleep_time.tv_sec = (long int)( ((Double) timePerFrame) - dEncTime);
+    sleep_time.tv_nsec = (long int)( (   ( (Double) timePerFrame) - dEncTime - (Double) sleep_time.tv_sec)*1000000000);
+//    printf("  [time in seconds %li]  ", sleep_time.tv_sec);
+//    printf("[time in nanoseconds %li]  ", sleep_time.tv_nsec);
+    //sleep for remained time (nanosecond precision)
+    nanosleep(&sleep_time,NULL);
+  }
+  
   printf(" [ET %5.0f ]", dEncTime );
 
   for (Int iRefList = 0; iRefList < 2; iRefList++)

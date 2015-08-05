@@ -59,6 +59,7 @@ namespace po = df::program_options_lite;
 Int AC_AlgorithmLevel;
 Int AC_DataLevel;
 
+Int timePerFrame;
 
 enum ExtendedProfileName // this is used for determining profile strings, where multiple profiles map to a single profile idc with various constraint flag combinations
 {
@@ -660,6 +661,7 @@ Bool TAppEncCfg::parseCfg( Int argc, Char* argv[] )
 
   // File, I/O and source parameters
   //DANIEL BEGIN
+  ("TimePerFrame",                                    timePerFrame, 0, "Fix time that a frame has to complete encoding (it will sleep if time is not used) 0: off N:N seconds to complete the frame encoding")
   ("AC_AlgorithmLevel",                               AC_AlgorithmLevel, 0, "Algorithm-level Approximate Computing technique. 0:off, 1: on")
   ("AC_DataLevel",                                    AC_DataLevel, 0, "Data-level Approximate Computing technique. 0:off, 1:on")
   //DANIEL END
@@ -2298,9 +2300,10 @@ Void TAppEncCfg::xPrintParameter()
 
   printf("Max Num Merge Candidates          : %d\n", m_maxNumMergeCand);
   //DANIEL BEGIN
-  printf("\nApproximate computing techniques    :\n");
+  printf("\nApproximate computing techniques\n");
   printf("Algorithm-level AC technique      : %d\n", AC_AlgorithmLevel);
   printf("Data-level AC technique           : %d\n", AC_DataLevel);
+  printf("\nTime per frame                    : %d seconds (0 means off)\n", timePerFrame);
   //DANIEL END
   printf("\n");
 
