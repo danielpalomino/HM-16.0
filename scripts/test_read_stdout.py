@@ -55,39 +55,36 @@ for (sequence, cfg_sequence) in zip(list_of_sequences, list_of_cfg_sequences):
 	all_bits = []
 	all_psnr = []
 	for qp in list_of_QPs:
-		AC_bits = []
-		AC_psnr = []
-		for AC in range(0,2):
-			arguments = [encoder_path,'-c',cfg_structure_path,'-c',cfg_sequences_path+cfg_sequence,'--InputFile='+sequences_path+sequence, '--QP='+str(qp), '--AC_DataLevel='+str(AC), '--AC_AlgorithmLevel='+str(AC)]+list_of_fixed_arguments
-			
-			#print command line
-			# sys.stdout.write('#')
-			# for token in arguments:
-			# 	sys.stdout.write(token+' ')
-			# print 
 
-			proc_encoder = subprocess.Popen(arguments,stdout=subprocess.PIPE)
-			proc_encoder.wait()
+		arguments = [encoder_path,'-c',cfg_structure_path,'-c',cfg_sequences_path+cfg_sequence,'--InputFile='+sequences_path+sequence, '--QP='+str(qp), '--AC_DataLevel=0', '--AC_AlgorithmLevel=0']+list_of_fixed_arguments
+		
+		# print command line
+		# sys.stdout.write('#')
+		# for token in arguments:
+		# 	sys.stdout.write(token+' ')
+		# print 
 
-			#parse output to get bits and psnr from proc_encoder.stdout file
-			encoder_output = proc_encoder.stdout.read()
-			m = re_bits.search(encoder_output)
-			if m:
-				AC_bits.append(m.group(1))
-			else:
-				print "ERROR on parsing bits"
-			m = re_psnr.search(encoder_output)
-			if m:
-				AC_psnr.append(m.group(1))
-			else:
-				print "ERROR on parsing psnr"
-		all_bits.append(AC_bits)
-		all_psnr.append(AC_psnr)
+		#call encoder as subprocess and save output to proc_encoder.stdout to parse and get information
+		proc_encoder = subprocess.Popen(arguments,stdout=subprocess.PIPE)
+		proc_encoder.wait()
 
+		#parse output to get bits and psnr from proc_encoder.stdout file
+		encoder_output = proc_encoder.stdout.read()
+		m = re_bits.search(encoder_output)
+		if m:
+			all_bits.append(m.group(1))
+		else:
+			print "ERROR on parsing bits"
+		m = re_psnr.search(encoder_output)
+		if m:
+			all_psnr.append(m.group(1))
+		else:
+			print "ERROR on parsing psnr"
+		
 	print sequence
 	print 'qp', 'bits_ref', 'psnr_ref', 'bits_AC', 'psnr_AC'
 	for bits, psnr, qp in zip(all_bits,all_psnr,list_of_QPs):		
-		print qp, bits[0], psnr[0], bits[1], psnr[1]
+		print qp, bits, psnr
 
 # #read temperature while encoder subprocess is not finished
 # core0 = []
