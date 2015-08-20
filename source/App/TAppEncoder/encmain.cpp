@@ -49,8 +49,13 @@
 // Main function
 // ====================================================================================================================
 
+//DANIEL BEGIN
+FILE *time_perCU;
+//DANIEL END
+
 int main(int argc, char* argv[])
 {
+  time_perCU=fopen("time_perCU.csv","w");
   TAppEncTop  cTAppEncTop;
 
   // print information
@@ -104,6 +109,8 @@ int main(int argc, char* argv[])
   // destroy application encoder class
   cTAppEncTop.destroy();
 
+  fclose(time_perCU);
+  
   return 0;
 }
 

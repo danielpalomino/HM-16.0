@@ -38,9 +38,15 @@
 #include "TEncTop.h"
 #include "TEncSlice.h"
 #include <math.h>
+#include <sys/time.h>
 
 extern Int AC_AlgorithmLevel;
 extern Int AC_DataLevel;
+extern Int saveTimePerCU;
+
+extern FILE *time_perCU;
+
+double time_compress_CU[1001];
 
 //! \ingroup TLibEncoder
 //! \{
@@ -947,6 +953,11 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
        uiEncCUOrder < (uiBoundingCUAddr+(rpcPic->getNumPartInCU()-1))/rpcPic->getNumPartInCU();
        uiCUAddr = rpcPic->getPicSym()->getCUOrderMap(++uiEncCUOrder) )
   {
+    //DANIEL BEGIN - MEDIR TEMPO DO COMPRESS CU PARA CADA CU
+      timeval t_before, t_after;
+      gettimeofday(&t_before,NULL);
+    //DANIEL END
+      
     // initialize CU encoder
     TComDataCU*& pcCU = rpcPic->getCU( uiCUAddr );    
     pcCU->initCU( rpcPic, uiCUAddr );
@@ -970,7 +981,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
     //          2      |     2
     //          3      |     3
     //          4      |     4
-    //MPD 1 only works for CTUs 64x65 for border CTUs smaller than 64x64 the QuadTreeDepth will be set to 4
+    //MPD 1 only works for CTUs 64x64 for border CTUs smaller than 64x64 the QuadTreeDepth will be set to 4
     if(AC_AlgorithmLevel){
 //        printf("Algorithm level on!\n");
         if(normVarMap[uiEncCUOrder/rpcPic->getFrameWidthInCU()][uiEncCUOrder%rpcPic->getFrameWidthInCU()]<0.1 && 
@@ -1156,6 +1167,14 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
     m_uiPicTotalBits += pcCU->getTotalBits();
     m_dPicRdCost     += pcCU->getTotalCost();
     m_uiPicDist      += pcCU->getTotalDistortion();
+    
+    //DANIEL BEGIN - MEDIR TEMPO DO COMPRESS CU PARA CADA CU
+      gettimeofday(&t_after,NULL);
+      
+      time_compress_CU[uiEncCUOrder] = (double) (t_after.tv_usec - t_before.tv_usec)/1000000 +
+                                       (double) (t_after.tv_sec - t_before.tv_sec);
+    //DANIEL END
+    
   }
   if ((iNumSubstreams > 1) && !depSliceSegmentsEnabled)
   {
@@ -1283,6 +1302,11 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
        uiEncCUOrder < (uiBoundingCUAddr+rpcPic->getNumPartInCU()-1)/rpcPic->getNumPartInCU();
        uiCUAddr = rpcPic->getPicSym()->getCUOrderMap(++uiEncCUOrder) )
   {
+    //DANIEL BEGIN - MEDIR TEMPO DO COMPRESS CU PARA CADA CU
+      timeval t_before, t_after;
+      gettimeofday(&t_before,NULL);
+    //DANIEL END
+      
     uiTileCol = rpcPic->getPicSym()->getTileIdxMap(uiCUAddr) % (rpcPic->getPicSym()->getNumColumnsMinus1()+1); // what column of tiles are we in?
     uiTileStartLCU = rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getFirstCUAddr();
     uiTileLCUX = uiTileStartLCU % uiWidthInLCUs;
@@ -1408,11 +1432,19 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
 #endif
     pcSbacCoders[uiSubStrm].load(m_pcSbacCoder);   //load back status of the entropy coder after encoding the LCU into relevant bitstream entropy coder
 
-    //Store probabilties of second LCU in line into buffer
+    //Store probabilities of second LCU in line into buffer
     if ( (depSliceSegmentsEnabled || (iNumSubstreams > 1)) && (uiCol == uiTileLCUX+1) && m_pcCfg->getWaveFrontsynchro())
     {
       m_pcBufferSbacCoders[uiTileCol].loadContexts( &pcSbacCoders[uiSubStrm] );
     }
+    //DANIEL BEGIN - MEDIR TEMPO DO COMPRESS CU PARA CADA CU
+    gettimeofday(&t_after,NULL);
+    time_compress_CU[uiEncCUOrder] += (double) (t_after.tv_usec - t_before.tv_usec)/1000000 + 
+                                     (double) (t_after.tv_sec - t_before.tv_sec);  
+    //DANIEL END
+    if(saveTimePerCU)
+        fprintf(time_perCU,"%d,%f\n",pcCU->getAddr(),time_compress_CU[uiEncCUOrder]);
+       
   }
   if( depSliceSegmentsEnabled )
   {

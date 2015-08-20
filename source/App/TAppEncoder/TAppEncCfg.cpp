@@ -60,6 +60,7 @@ Int AC_AlgorithmLevel;
 Int AC_DataLevel;
 
 Int timePerFrame;
+Int saveTimePerCU;
 
 enum ExtendedProfileName // this is used for determining profile strings, where multiple profiles map to a single profile idc with various constraint flag combinations
 {
@@ -661,6 +662,7 @@ Bool TAppEncCfg::parseCfg( Int argc, Char* argv[] )
 
   // File, I/O and source parameters
   //DANIEL BEGIN
+  ("SaveTimePerCU",                                   saveTimePerCU, 0, "save in file time_per_CU.csv the encoding time for each CU using sys/time.h library")
   ("TimePerFrame",                                    timePerFrame, 0, "Fix time that a frame has to complete encoding (it will sleep if time is not used) 0: off N:N seconds to complete the frame encoding")
   ("AC_AlgorithmLevel",                               AC_AlgorithmLevel, 0, "Algorithm-level Approximate Computing technique. 0:off, 1: on")
   ("AC_DataLevel",                                    AC_DataLevel, 0, "Data-level Approximate Computing technique. 0:off, 1:on")
@@ -2304,6 +2306,7 @@ Void TAppEncCfg::xPrintParameter()
   printf("Algorithm-level AC technique      : %d\n", AC_AlgorithmLevel);
   printf("Data-level AC technique           : %d\n", AC_DataLevel);
   printf("\nTime per frame                    : %d seconds (0 means off)\n", timePerFrame);
+  printf("\nSave Time per CU                  : %d\n", saveTimePerCU);
   //DANIEL END
   printf("\n");
 
